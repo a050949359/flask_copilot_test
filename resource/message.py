@@ -99,16 +99,17 @@ delete:
 
 from flask import request
 from flask_restful import Resource
-from db_helper import is_database_error
+from db.db_helper import is_database_error
+from db.message_sql import (
+    SQL_SELECT_ONE_MESSAGE,
+    SQL_SELECT_ALL_MESSAGE,
+    SQL_INSERT_MESSAGE,
+    SQL_UPDATE_MESSAGE,
+    SQL_DELETE_MESSAGE,
+    SQL_USER_EXISTS
+)
 
 class Message(Resource):
-    SQL_SELECT_ONE = "SELECT id, user_id, content FROM message WHERE id=%s"
-    SQL_SELECT_ALL = "SELECT id, user_id, content FROM message"
-    SQL_INSERT = "INSERT INTO message (user_id, content) VALUES (%s, %s)"
-    SQL_UPDATE = "UPDATE message SET content=%s WHERE id=%s"
-    SQL_DELETE = "DELETE FROM message WHERE id=%s"
-    SQL_USER_EXISTS = "SELECT id FROM user WHERE id=%s"
-
     def __init__(self, get_conn):
         self.get_conn = get_conn
 
@@ -116,16 +117,11 @@ class Message(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                if message_id:
-                    c.execute(self.SQL_SELECT_ONE, (message_id,))
-                    row = c.fetchone()
-                    if row:
-                        return {'id': row[0], 'user_id': row[1], 'content': row[2]}
-                    return {'message': 'Message not found'}, 404
-                else:
-                    c.execute(self.SQL_SELECT_ALL)
-                    rows = c.fetchall()
-                    return [{'id': r[0], 'user_id': r[1], 'content': r[2]} for r in rows]
+                c.execute(SQL_SELECT_ONE_MESSAGE, (message_id,))
+                row = c.fetchone()
+                if row:
+                    return {'id': row[0], 'user_id': row[1], 'content': row[2]}
+                return {'message': 'Message not found'}, 404
         except Exception as e:
             if is_database_error(e):
                 return {'message': f'Database error: {str(e)}'}, 500
@@ -140,10 +136,10 @@ class Message(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                c.execute(self.SQL_USER_EXISTS, (user_id,))
+                c.execute(SQL_USER_EXISTS, (user_id,))
                 if not c.fetchone():
                     return {'message': 'User not found'}, 404
-                c.execute(self.SQL_INSERT, (user_id, content))
+                c.execute(SQL_INSERT_MESSAGE, (user_id, content))
                 conn.commit()
                 message_id = c.lastrowid if hasattr(c, 'lastrowid') else c.lastrowid if hasattr(conn, 'insert_id') else None
             return {'id': message_id, 'user_id': user_id, 'content': content}, 201
@@ -160,7 +156,7 @@ class Message(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                c.execute(self.SQL_UPDATE, (content, message_id))
+                c.execute(SQL_UPDATE_MESSAGE, (content, message_id))
                 if c.rowcount == 0:
                     return {'message': 'Message not found'}, 404
                 conn.commit()
@@ -174,7 +170,7 @@ class Message(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                c.execute(self.SQL_DELETE, (message_id,))
+                c.execute(SQL_DELETE_MESSAGE, (message_id,))
                 if c.rowcount == 0:
                     return {'message': 'Message not found'}, 404
                 conn.commit()

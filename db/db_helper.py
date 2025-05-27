@@ -20,6 +20,8 @@ MYSQL_CONFIG = {
 
 SQLITE_DB = os.getenv('SQLITE_DB', 'app.db')
 
+PLACEHOLDER = '?' if DB_TYPE == 'sqlite' else '%s'
+
 def get_conn():
     if DB_TYPE == 'sqlite':
         return sqlite3.connect(SQLITE_DB)

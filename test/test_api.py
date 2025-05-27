@@ -1,7 +1,7 @@
 import unittest
 import json
 from app import app
-from db import init_db
+from db.db import init_db
 
 class UserApiTestCase(unittest.TestCase):
     def setUp(self):

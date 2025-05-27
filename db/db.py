@@ -5,6 +5,8 @@ try:
 except ImportError:
     pymysql = None
 from dotenv import load_dotenv
+from db.user_sql import USER_SQL
+from db.message_sql import MESSAGE_SQL
 
 load_dotenv()
 
@@ -19,6 +21,16 @@ MYSQL_CONFIG = {
 }
 
 SQLITE_DB = os.getenv('SQLITE_DB', 'app.db')
+
+# SQL 語法集中管理
+SQL_REGISTRY = {
+    'user': USER_SQL,
+    'message': MESSAGE_SQL,
+}
+
+def get_sql(resource, key):
+    """取得指定資源的 SQL 語法"""
+    return SQL_REGISTRY[resource][key]
 
 def init_db():
     if DB_TYPE == 'sqlite':

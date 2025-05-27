@@ -48,12 +48,10 @@ get:
 
 from flask import request
 from flask_restful import Resource
-from db_helper import is_integrity_error, is_database_error
+from db.db_helper import is_integrity_error, is_database_error
+from db.user_sql import SQL_INSERT, SQL_SELECT
 
 class User(Resource):
-    SQL_INSERT = "INSERT INTO user (username) VALUES (%s)"
-    SQL_SELECT = "SELECT id, username FROM user WHERE id=%s"
-
     def __init__(self, get_conn):
         self.get_conn = get_conn
 
@@ -65,7 +63,7 @@ class User(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                c.execute(self.SQL_INSERT, (username,))
+                c.execute(SQL_INSERT, (username,))
                 conn.commit()
                 user_id = c.lastrowid if hasattr(c, 'lastrowid') else c.lastrowid if hasattr(conn, 'insert_id') else None
         except Exception as e:
@@ -80,7 +78,7 @@ class User(Resource):
         try:
             with self.get_conn() as conn:
                 c = conn.cursor()
-                c.execute(self.SQL_SELECT, (user_id,))
+                c.execute(SQL_SELECT, (user_id,))
                 row = c.fetchone()
         except Exception as e:
             if is_database_error(e):

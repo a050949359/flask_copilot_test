@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
-from db import init_db
-from db_helper import get_conn
+from db.db import init_db
+from db.db_helper import get_conn
 from resource.user import User
 from resource.message import Message
 
