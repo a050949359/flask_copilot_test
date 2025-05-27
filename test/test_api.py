@@ -1,9 +1,11 @@
 import unittest
 import json
 from app import app
+from db import init_db
 
 class UserApiTestCase(unittest.TestCase):
     def setUp(self):
+        init_db()
         self.app = app.test_client()
         self.app.testing = True
 
@@ -26,6 +28,7 @@ class UserApiTestCase(unittest.TestCase):
 
 class MessageApiTestCase(unittest.TestCase):
     def setUp(self):
+        init_db()
         self.app = app.test_client()
         self.app.testing = True
 

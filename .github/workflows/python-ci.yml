@@ -35,12 +35,10 @@ jobs:
         SQLITE_DB: app.db
       run: |
         python -m unittest discover -s test
+    - name: Download wait-for-it
+      run: curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
     - name: Wait for MySQL
-      uses: jakejarvis/wait-for-it@v1
-      with:
-        host: 127.0.0.1
-        port: 3306
-        timeout: 30
+      run: bash wait-for-it.sh 127.0.0.1:3306 -t 30
     - name: Test with MySQL
       env:
         DB_TYPE: mysql
